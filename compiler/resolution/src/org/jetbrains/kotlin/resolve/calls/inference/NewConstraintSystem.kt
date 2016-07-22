@@ -17,34 +17,82 @@
 package org.jetbrains.kotlin.resolve.calls.inference
 
 import org.jetbrains.kotlin.descriptors.TypeParameterDescriptor
-import org.jetbrains.kotlin.resolve.calls.model.NewCall
-import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.resolve.calls.model.*
+import org.jetbrains.kotlin.types.SimpleType
 import org.jetbrains.kotlin.types.TypeConstructor
+import org.jetbrains.kotlin.types.TypeSubstitutor
+import org.jetbrains.kotlin.types.UnwrappedType
 
-class TypeVariable(val call: NewCall,
-                   val originalTypeParameter: TypeParameterDescriptor) {
+sealed class TypeVariable() {
     val freshTypeConstructor: TypeConstructor = TODO()
+    val defaultType: SimpleType = TODO()
 }
 
-interface Position
+class SimpleTypeVariable(
+        val call: NewCall,
+        val originalTypeParameter: TypeParameterDescriptor
+) : TypeVariable()
+
+class LambdaTypeVariable(
+        val outerCall: NewCall,
+        val lambdaArgument: LambdaArgument,
+        val kind: Kind
+) : TypeVariable() {
+    enum class Kind {
+        RECEIVER,
+        PARAMETER,
+        RETURN_TYPE
+    }
+}
 
 // system is immutable. For each "mutable" operation we will create new ConstraintSystem.
 interface NewConstraintSystem {
     val hasContradiction: Boolean
     val typeVariables: List<TypeVariable>
 
-    fun getLowerProperTypeForVariable(variable: TypeVariable): KotlinType?
+    fun getLowerProperTypeForVariable(variable: TypeVariable): UnwrappedType?
 
-    fun getUpperProperTypeForVariable(variable: TypeVariable): KotlinType?
+    fun getUpperProperTypeForVariable(variable: TypeVariable): UnwrappedType?
 
-    fun fixTypeVariable(variable: TypeVariable, value: KotlinType): NewConstraintSystem
+    fun fixTypeVariable(variable: TypeVariable, value: UnwrappedType): NewConstraintSystem
 
-    fun addConstraint(lowerType: KotlinType, upperType: KotlinType, position: Position): NewConstraintSystem
-
-    fun concat(otherSystem: NewConstraintSystem): NewConstraintSystem
 }
 
 @Suppress("ABSTRACT_MEMBER_NOT_IMPLEMENTED")
 object EmptyConstraintSystem : NewConstraintSystem {
 
 }
+
+
+interface ConstraintSystemBuilder {
+    val hasContradiction: Boolean
+
+    // If hasContradiction then this list should contains some diagnostic about problem
+    val diagnostics: List<CallDiagnostic>
+
+    fun registerVariable(variable: TypeVariable)
+
+    fun addSubtypeConstraint(lowerType: UnwrappedType, upperType: UnwrappedType, position: Position)
+    fun addEqualityConstraint(a: UnwrappedType, b: UnwrappedType, position: Position)
+
+    fun addSubsystem(otherSystem: NewConstraintSystem)
+
+    fun isCompatibleSubtypeConstraint(lowerType: UnwrappedType, upperType: UnwrappedType): Boolean
+
+    /**
+     * This function remove variables for which we know exact type.
+     * @return substitutor from typeVariable to result
+     */
+    fun simplify(): TypeSubstitutor
+
+    fun build(): NewConstraintSystem // return immutable copy of constraint system
+}
+
+fun createNewConstraintSystemBuilder(): ConstraintSystemBuilder = TODO()
+
+
+interface Position
+
+class ExplicitTypeParameter(val typeArgument: SimpleTypeArgument) : Position
+class DeclaredUpperBound(val typeParameterDescriptor: TypeParameterDescriptor) : Position
+class ArgumentPosition(val argument: CallArgument) : Position

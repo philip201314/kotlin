@@ -19,10 +19,12 @@ package org.jetbrains.kotlin.resolve.calls
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.VariableDescriptor
+import org.jetbrains.kotlin.resolve.calls.inference.NewConstraintSystem
 import org.jetbrains.kotlin.resolve.calls.model.NewCall
 import org.jetbrains.kotlin.resolve.calls.tower.TowerResolver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.types.KotlinType
+import org.jetbrains.kotlin.types.UnwrappedType
 
 
 sealed class BaseResolvedCall<D : CallableDescriptor> {
@@ -36,8 +38,9 @@ sealed class BaseResolvedCall<D : CallableDescriptor> {
     ) : BaseResolvedCall<FunctionDescriptor>()
 
 
-    class OnlyResolvedCall<D : CallableDescriptor>: BaseResolvedCall<D>() {
-        val currentReturnType: KotlinType = TODO()
+    class OnlyResolvedCall<D : CallableDescriptor> : BaseResolvedCall<D>() {
+        val currentReturnType: UnwrappedType = TODO()
+        val constraintSystem: NewConstraintSystem = TODO()
     }
 }
 

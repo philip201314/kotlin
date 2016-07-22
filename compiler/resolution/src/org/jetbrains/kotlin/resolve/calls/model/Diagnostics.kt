@@ -37,6 +37,8 @@ interface DiagnosticReporter {
 
     fun onTypeArgument(typeArgument: TypeArgument, diagnostic: CallDiagnostic)
 
+    fun onCallReceiver(callReceiver: SimpleCallArgument, diagnostic: CallDiagnostic)
+
     fun onCallArgument(callArgument: CallArgument, diagnostic: CallDiagnostic)
     fun onCallArgumentName(callArgument: CallArgument, diagnostic: CallDiagnostic)
     fun onCallArgumentSpread(callArgument: CallArgument, diagnostic: CallDiagnostic)

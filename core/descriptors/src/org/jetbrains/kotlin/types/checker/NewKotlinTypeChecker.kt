@@ -332,6 +332,9 @@ object NullabilityChecker {
     fun isPossibleSubtype(context: TypeCheckerContext, subType: SimpleType, superType: SimpleType): Boolean =
             context.runIsPossibleSubtype(subType, superType)
 
+    fun isSubtypeOfAny(type: UnwrappedType): Boolean =
+            TypeCheckerContext(false).hasNotNullSupertype(type.lowerIfFlexible(), SupertypesPolicy.LowerIfFlexible)
+
     private fun TypeCheckerContext.runIsPossibleSubtype(subType: SimpleType, superType: SimpleType): Boolean {
         // it makes for case String? & Any <: String
         assert(subType.isIntersectionType || subType.isSingleClassifierType) {"Not singleClassifierType superType: $superType"}

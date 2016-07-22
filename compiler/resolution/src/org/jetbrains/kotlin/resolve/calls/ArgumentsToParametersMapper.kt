@@ -34,16 +34,21 @@ class ArgumentsToParametersMapper {
 
     private val EmptyArgumentMapping = ArgumentMapping(emptyMap(), emptyList())
 
-    fun mapArguments(call: NewCall, descriptor: CallableDescriptor): ArgumentMapping {
-        val externalArgument = call.externalArgument
+    fun mapArguments(call: NewCall, descriptor: CallableDescriptor): ArgumentMapping =
+            mapArguments(call.argumentsInParenthesis, call.externalArgument, descriptor)
 
+    fun mapArguments(
+            argumentsInParenthesis: List<CallArgument>,
+            externalArgument: CallArgument?,
+            descriptor: CallableDescriptor
+    ): ArgumentMapping {
         // optimization for case of variable
-        if (call.argumentsInParenthesis.isEmpty() && externalArgument == null && descriptor.valueParameters.isEmpty()) {
+        if (argumentsInParenthesis.isEmpty() && externalArgument == null && descriptor.valueParameters.isEmpty()) {
             return EmptyArgumentMapping
         }
         else {
             val processor = CallArgumentProcessor(descriptor)
-            processor.processArgumentsInParenthesis(call.argumentsInParenthesis)
+            processor.processArgumentsInParenthesis(argumentsInParenthesis)
 
             if (externalArgument != null) {
                 processor.processExternalArgument(externalArgument)

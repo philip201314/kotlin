@@ -51,6 +51,7 @@ interface TowerContext<D : CallableDescriptor, out C: Candidate<D>> {
 
 interface InvokeTowerContext<F : Candidate<FunctionDescriptor>, V : Candidate<VariableDescriptor>> {
 
+    // variable here is resolved, invoke -- only chosen
     fun transformCandidate(variable: V, invoke: F): F
 
     fun contextForVariable(stripExplicitReceiver: Boolean): TowerContext<VariableDescriptor, V>
