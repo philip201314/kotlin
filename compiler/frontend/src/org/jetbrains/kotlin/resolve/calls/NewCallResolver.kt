@@ -16,6 +16,8 @@
 
 package org.jetbrains.kotlin.resolve.calls
 
+import com.google.common.reflect.TypeResolver
+import org.jetbrains.kotlin.config.LanguageFeatureSettings
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.Call
@@ -29,13 +31,18 @@ import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
 import org.jetbrains.kotlin.resolve.calls.tower.NewResolutionOldInference
 import org.jetbrains.kotlin.resolve.scopes.receivers.QualifierReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
+import org.jetbrains.kotlin.types.TypeProjection
 import org.jetbrains.kotlin.types.UnwrappedType
 import org.jetbrains.kotlin.types.checker.intersectTypes
 import org.jetbrains.kotlin.utils.addToStdlib.check
 import java.util.*
 
-class NewCallResolver {
+class NewCallResolver(
+        val typeResolver: TypeResolver,
+        val languageFeatureSettings: LanguageFeatureSettings
+) {
     val useNewInference = false
+    val allowStarInFunctionArguments = false
 
     fun <D : CallableDescriptor> runResolutionAndInference(
             context: BasicCallResolutionContext,
@@ -76,6 +83,10 @@ class NewCallResolver {
             }
             else -> error("Incorrect receiver: $oldReceiver")
         }
+
+    }
+
+    fun resolveTypeArguments(context: BasicCallResolutionContext, typeArguments: List<TypeProjection>) {
 
     }
 
