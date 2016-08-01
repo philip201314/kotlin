@@ -18,7 +18,7 @@ package org.jetbrains.kotlin.config
 
 import org.jetbrains.kotlin.config.LanguageVersion.KOTLIN_1_1
 
-enum class LanguageFeature(val sinceVersion: LanguageVersion) {
+enum class LanguageFeature(val sinceVersion: LanguageVersion?) {
     // Note: names of these entries are also used in diagnostic tests
     TypeAliases(KOTLIN_1_1),
     BoundCallableReferences(KOTLIN_1_1),
@@ -27,7 +27,10 @@ enum class LanguageFeature(val sinceVersion: LanguageVersion) {
     Coroutines(KOTLIN_1_1),
     AdditionalBuiltInsMembers(KOTLIN_1_1),
     DataClassInheritance(KOTLIN_1_1),
-    InlineProperties(KOTLIN_1_1)
+    InlineProperties(KOTLIN_1_1),
+    CommonConstraintSystem(null),
+    NotCompletedReceiver(null),
+    PlaceholderInTypeParameters(null),
     ;
 
     companion object {
@@ -41,7 +44,7 @@ enum class LanguageVersion(val versionString: String): LanguageFeatureSettings {
     KOTLIN_1_1("1.1");
 
     override fun supportsFeature(feature: LanguageFeature): Boolean {
-        return this.ordinal >= feature.sinceVersion.ordinal
+        return feature.sinceVersion != null && this.ordinal >= feature.sinceVersion.ordinal
     }
 
     companion object {
