@@ -70,7 +70,8 @@ public class CallResolver {
     private ArgumentTypeResolver argumentTypeResolver;
     private GenericCandidateResolver genericCandidateResolver;
     private CallCompleter callCompleter;
-    private NewResolutionOldInference newCallResolver;
+    private NewResolutionOldInference newResolutionOldInference;
+    private NewCallResolver newCallResolver;
     private final KotlinBuiltIns builtIns;
     private final LanguageFeatureSettings languageFeatureSettings;
 
@@ -116,7 +117,13 @@ public class CallResolver {
 
     // component dependency cycle
     @Inject
-    public void setCallCompleter(@NotNull NewResolutionOldInference newCallResolver) {
+    public void setResolutionOldInference(@NotNull NewResolutionOldInference newResolutionOldInference) {
+        this.newResolutionOldInference = newResolutionOldInference;
+    }
+
+    // component dependency cycle
+    @Inject
+    public void setNewCallResolver (@NotNull NewCallResolver newCallResolver) {
         this.newCallResolver = newCallResolver;
     }
 
@@ -512,6 +519,11 @@ public class CallResolver {
         Call call = context.call;
         tracing.bindCall(context.trace, call);
 
+        if (!(resolutionTask.resolutionKind instanceof GivenCandidates) && newCallResolver.getUseNewInference()) {
+            assert resolutionTask.name != null;
+            return newCallResolver.runResolutionAndInference(context, resolutionTask.name, resolutionTask.resolutionKind);
+        }
+
         TemporaryBindingTrace traceToResolveCall = TemporaryBindingTrace.create(context.trace, "trace to resolve call", call);
         BasicCallResolutionContext newContext = context.replaceBindingTrace(traceToResolveCall);
 
@@ -601,11 +613,11 @@ public class CallResolver {
 
         if (!(resolutionTask.resolutionKind instanceof GivenCandidates)) {
             assert resolutionTask.name != null;
-            return newCallResolver.runResolution(context, resolutionTask.name, resolutionTask.resolutionKind, tracing);
+            return newResolutionOldInference.runResolution(context, resolutionTask.name, resolutionTask.resolutionKind, tracing);
         }
         else {
             assert resolutionTask.givenCandidates != null;
-            return newCallResolver.runResolutionForGivenCandidates(context, tracing, resolutionTask.givenCandidates);
+            return newResolutionOldInference.runResolutionForGivenCandidates(context, tracing, resolutionTask.givenCandidates);
         }
     }
 

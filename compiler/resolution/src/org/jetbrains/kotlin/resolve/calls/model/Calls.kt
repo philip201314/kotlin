@@ -28,6 +28,7 @@ import org.jetbrains.kotlin.resolve.calls.inference.NewConstraintSystem
 import org.jetbrains.kotlin.resolve.calls.inference.TypeVariable
 import org.jetbrains.kotlin.resolve.calls.tower.CandidateWithBoundDispatchReceiver
 import org.jetbrains.kotlin.resolve.calls.util.createFunctionType
+import org.jetbrains.kotlin.resolve.scopes.receivers.QualifierReceiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.types.SimpleType
 import org.jetbrains.kotlin.types.TypeSubstitutor
@@ -118,6 +119,7 @@ interface SimpleTypeArgument: TypeArgument {
 
 interface NewCall {
     val explicitReceiver: SimpleCallArgument?
+    val qualifierReceiver: QualifierReceiver?
 
     // a.(foo)() -- (foo) is dispatchReceiverForInvoke
     val dispatchReceiverForInvokeExtension: SimpleCallArgument? get() = null
@@ -160,6 +162,9 @@ fun NewCall.checkCallInvariants() {
         "Dispatch receiver for invoke cannot be safe: $dispatchReceiverForInvokeExtension"
     }
 
+    assert(explicitReceiver == null || qualifierReceiver == null) {
+        "Explicit receiver may be explicitReceiver or qualifierReceiver but not both: $explicitReceiver, $qualifierReceiver"
+    }
 }
 
 
