@@ -32,6 +32,7 @@ import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.types.SimpleType
 import org.jetbrains.kotlin.types.TypeSubstitutor
 import org.jetbrains.kotlin.types.UnwrappedType
+import org.jetbrains.kotlin.types.typeUtil.builtIns
 import org.jetbrains.kotlin.utils.addToStdlib.check
 
 
@@ -198,7 +199,7 @@ class ResolvedLambdaArgument(
         val parameters: List<UnwrappedType>,
         val returnType: UnwrappedType
 ) {
-    val type: SimpleType = createFunctionType(Annotations.EMPTY, receiver, parameters, returnType) // todo support annotations
+    val type: SimpleType = createFunctionType(returnType.builtIns, Annotations.EMPTY, receiver, parameters, returnType) // todo support annotations
 }
 
 

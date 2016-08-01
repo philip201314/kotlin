@@ -50,15 +50,15 @@ class NewResolutionAndInference(val newCandidateResolver: NewCandidateResolver) 
     private inner class InvokeContext(
             val call: NewCall,
             val scopeTower: ScopeTower
-    ) : InvokeTowerContext<ResolutionCandidate<FunctionDescriptor>, SimpleResolutionCandidate<VariableDescriptor>> {
+    ) : InvokeTowerContext<NewResolutionCandidate<FunctionDescriptor>, SimpleResolutionCandidate<VariableDescriptor>> {
         init {
             assert(call.dispatchReceiverForInvokeExtension == null) { call }
         }
 
         override fun transformCandidate(
                 variable: SimpleResolutionCandidate<VariableDescriptor>,
-                invoke: ResolutionCandidate<FunctionDescriptor>
-        ): ResolutionCandidate<FunctionDescriptor> {
+                invoke: NewResolutionCandidate<FunctionDescriptor>
+        ): NewResolutionCandidate<FunctionDescriptor> {
             assert(invoke is SimpleResolutionCandidate) {
                 "VariableAsFunction candidate is not allowed here: $invoke"
             }
@@ -79,7 +79,7 @@ class NewResolutionAndInference(val newCandidateResolver: NewCandidateResolver) 
         override fun contextForInvoke(
                 variable: SimpleResolutionCandidate<VariableDescriptor>,
                 useExplicitReceiver: Boolean
-        ): Pair<ReceiverValue, TowerContext<FunctionDescriptor, ResolutionCandidate<FunctionDescriptor>>> {
+        ): Pair<ReceiverValue, TowerContext<FunctionDescriptor, NewResolutionCandidate<FunctionDescriptor>>> {
             // todo when we construct ScopeTower for invoke, we should fix smartCasts for receiver a.foo
             // see NewResolutionOldInference.InvokeContext.contextForInvoke
 

@@ -35,12 +35,12 @@ interface ResolutionPart {
     fun <D : CallableDescriptor> SimpleResolutionCandidate<D>.process(resolver: NewCandidateResolver): List<CallDiagnostic>
 }
 
-sealed class ResolutionCandidate<D : CallableDescriptor>(protected val candidateResolver: NewCandidateResolver) : Candidate<D>
+sealed class NewResolutionCandidate<D : CallableDescriptor>(protected val candidateResolver: NewCandidateResolver) : Candidate<D>
 
 sealed class AbstractSimpleResolutionCandidate<D : CallableDescriptor>(
         candidateResolver: NewCandidateResolver,
         val resolutionSequence: List<ResolutionPart>
-) : ResolutionCandidate<D>(candidateResolver) {
+) : NewResolutionCandidate<D>(candidateResolver) {
     override val isSuccessful: Boolean
         get() {
             process(stopOnFirstError = true)
@@ -98,7 +98,7 @@ class VariableAsFunction(
         candidateResolver: NewCandidateResolver,
         val resolvedVariable: SimpleResolutionCandidate<VariableDescriptor>,
         val invokeCandidate: SimpleResolutionCandidate<FunctionDescriptor>
-) : ResolutionCandidate<FunctionDescriptor>(candidateResolver) {
+) : NewResolutionCandidate<FunctionDescriptor>(candidateResolver) {
     override val candidateDescriptor: FunctionDescriptor get() = invokeCandidate.candidateDescriptor
     override val isSuccessful: Boolean get() = resolvedVariable.isSuccessful && invokeCandidate.isSuccessful
     override val status: ResolutionCandidateStatus
