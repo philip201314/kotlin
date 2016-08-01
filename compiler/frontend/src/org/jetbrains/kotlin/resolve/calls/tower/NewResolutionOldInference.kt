@@ -267,7 +267,7 @@ class NewResolutionOldInference(
             val candidateStatus: ResolutionCandidateStatus,
             val resolvedCall: MutableResolvedCall<@UnsafeVariance D>
     ) : Candidate<D> {
-        override val descriptor: D
+        override val candidateDescriptor: D
             get() = resolvedCall.candidateDescriptor
 
         override val isSuccessful: Boolean

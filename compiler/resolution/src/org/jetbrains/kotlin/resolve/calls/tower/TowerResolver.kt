@@ -30,7 +30,7 @@ import org.jetbrains.kotlin.utils.addToStdlib.check
 import java.util.*
 
 interface Candidate<out D : CallableDescriptor> {
-    val descriptor: D
+    val candidateDescriptor: D
 
     // this operation should be very fast
     val isSuccessful: Boolean
