@@ -42,7 +42,9 @@ import org.jetbrains.kotlin.utils.addToStdlib.check
     val argumentName: Name?
 }
 
-/*sealed*/ interface SimpleCallArgument : CallArgument {
+/*sealed*/ interface ReceiverCallArgument
+
+/*sealed*/ interface SimpleCallArgument : CallArgument, ReceiverCallArgument {
     val isSafeCall: Boolean
 }
 
@@ -118,8 +120,7 @@ interface SimpleTypeArgument: TypeArgument {
 }
 
 interface NewCall {
-    val explicitReceiver: SimpleCallArgument?
-    val qualifierReceiver: QualifierReceiver?
+    val explicitReceiver: ReceiverCallArgument?
 
     // a.(foo)() -- (foo) is dispatchReceiverForInvoke
     val dispatchReceiverForInvokeExtension: SimpleCallArgument? get() = null
@@ -147,7 +148,7 @@ fun NewCall.checkCallInvariants() {
         "Lambda argument or callable reference is not allowed as explicit receiver: $explicitReceiver"
     }
 
-    explicitReceiver?.checkReceiverInvariants()
+    (explicitReceiver as? SimpleCallArgument)?.checkReceiverInvariants()
     dispatchReceiverForInvokeExtension?.checkReceiverInvariants()
 
     assert(externalArgument == null || !externalArgument!!.isSpread) {
@@ -160,10 +161,6 @@ fun NewCall.checkCallInvariants() {
 
     assert(dispatchReceiverForInvokeExtension == null || !dispatchReceiverForInvokeExtension!!.isSafeCall) {
         "Dispatch receiver for invoke cannot be safe: $dispatchReceiverForInvokeExtension"
-    }
-
-    assert(explicitReceiver == null || qualifierReceiver == null) {
-        "Explicit receiver may be explicitReceiver or qualifierReceiver but not both: $explicitReceiver, $qualifierReceiver"
     }
 }
 

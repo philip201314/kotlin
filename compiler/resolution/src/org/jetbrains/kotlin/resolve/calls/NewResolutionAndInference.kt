@@ -85,8 +85,9 @@ class NewResolutionAndInference(val newCandidateResolver: NewCandidateResolver) 
 
             val variableReceiver = transformToCallReceiver(variable)
             val receiverValue = transformToReceiverValue(variableReceiver)
-            val callForInvoke = if (useExplicitReceiver && call.explicitReceiver != null) {
-                CallForInvoke(call, call.explicitReceiver, variableReceiver)
+            val explicitReceiver = call.explicitReceiver
+            val callForInvoke = if (useExplicitReceiver && explicitReceiver is SimpleCallArgument) {
+                CallForInvoke(call, explicitReceiver, variableReceiver)
             }
             else {
                 CallForInvoke(call, variableReceiver, null)
@@ -95,7 +96,7 @@ class NewResolutionAndInference(val newCandidateResolver: NewCandidateResolver) 
         }
     }
 
-    class CallForVariable(override val explicitReceiver: SimpleCallArgument?, override val name: Name) : NewCall {
+    class CallForVariable(override val explicitReceiver: ReceiverCallArgument?, override val name: Name) : NewCall {
         override val typeArguments: List<TypeArgument> get() = emptyList()
         override val argumentsInParenthesis: List<CallArgument> get() = emptyList()
         override val externalArgument: CallArgument? get() = null
@@ -103,7 +104,7 @@ class NewResolutionAndInference(val newCandidateResolver: NewCandidateResolver) 
 
     class CallForInvoke(
             val baseCall: NewCall,
-            override val explicitReceiver: SimpleCallArgument?,
+            override val explicitReceiver: SimpleCallArgument,
             override val dispatchReceiverForInvokeExtension: SimpleCallArgument?
     ) : NewCall {
         override val name: Name get() = OperatorNameConventions.INVOKE

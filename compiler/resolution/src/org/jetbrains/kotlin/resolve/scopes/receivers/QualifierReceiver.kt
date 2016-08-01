@@ -17,9 +17,10 @@
 package org.jetbrains.kotlin.resolve.scopes.receivers
 
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.resolve.calls.model.ReceiverCallArgument
 import org.jetbrains.kotlin.resolve.scopes.MemberScope
 
-interface QualifierReceiver : Receiver {
+interface QualifierReceiver : Receiver, ReceiverCallArgument {
     val descriptor: DeclarationDescriptor
 
     val staticScope: MemberScope

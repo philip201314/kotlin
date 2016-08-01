@@ -23,8 +23,16 @@ import org.jetbrains.kotlin.resolve.calls.callUtil.isSafeCall
 import org.jetbrains.kotlin.resolve.calls.context.BasicCallResolutionContext
 import org.jetbrains.kotlin.resolve.calls.model.*
 import org.jetbrains.kotlin.resolve.calls.results.OverloadResolutionResultsImpl
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValue
+import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
 import org.jetbrains.kotlin.resolve.calls.tower.NewResolutionOldInference
+import org.jetbrains.kotlin.resolve.scopes.receivers.QualifierReceiver
+import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
 import org.jetbrains.kotlin.types.UnwrappedType
+import org.jetbrains.kotlin.types.checker.intersectTypes
+import org.jetbrains.kotlin.utils.addToStdlib.check
+import java.util.*
 
 class NewCallResolver {
     val useNewInference = false
@@ -37,21 +45,52 @@ class NewCallResolver {
 
     }
 
-    fun toNewCall(oldCall: Call): NewCall {
-        oldCall.isSafeCall()
+    fun DataFlowInfo.collectedType(dataFlowValue: DataFlowValue): UnwrappedType? {
+        val collectedTypes = getCollectedTypes(dataFlowValue).check { it.isNotEmpty() } ?: return null
+        val types = ArrayList<UnwrappedType>(collectedTypes.size + 1)
+        collectedTypes.mapTo(types) { it.unwrap() }
+        types.add(dataFlowValue.type.unwrap())
+
+        return intersectTypes(types)
     }
 
-    class Receiver(
+    fun toNewCall(context: BasicCallResolutionContext,
+                  oldCall: Call): NewCall {
+        val oldReceiver = oldCall.explicitReceiver
+        val isSafeCall = oldCall.isSafeCall()
+
+        val explicitReceiver = when(oldReceiver) {
+            null -> null
+            is QualifierReceiver -> oldReceiver
+            is ReceiverValue -> {
+                val nativeType = oldReceiver.type.unwrap()
+                val dataFlowValue = DataFlowValueFactory.createDataFlowValue(oldReceiver, context)
+                val collectedType = context.dataFlowInfo.collectedType(dataFlowValue)
+
+                if (dataFlowValue.isStable) {
+                    ExplicitReceiver(collectedType ?: nativeType, null, isSafeCall)
+                }
+                else {
+                    ExplicitReceiver(nativeType, collectedType, isSafeCall)
+                }
+            }
+            else -> error("Incorrect receiver: $oldReceiver")
+        }
+
+    }
+
+    class ExplicitReceiver(
             override val type: UnwrappedType,
             override val unstableType: UnwrappedType?,
-            override val isSafeCall: Boolean,
-            override val isSpread: Boolean,
-            override val argumentName: Name?
-    ) : ExpressionArgument
+            override val isSafeCall: Boolean
+    ) : ExpressionArgument {
+        override val isSpread: Boolean get() = false
+        override val argumentName: Name? get() = null
+    }
 
 
     class NewCallImpl(
-            override val explicitReceiver: SimpleCallArgument?,
+            override val explicitReceiver: ReceiverCallArgument?,
             override val name: Name,
             override val typeArguments: List<TypeArgument>,
             override val argumentsInParenthesis: List<CallArgument>,
