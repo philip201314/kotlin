@@ -75,7 +75,7 @@ interface SubCall : SimpleCallArgument {
 
 interface LambdaArgument : CallArgument {
     override val isSpread: Boolean
-        get() = false // todo error on call -- function type is not subtype of Array<out ...>
+        get() = false
 
     /**
      * parametersTypes == null means, that there is no declared arguments
@@ -96,7 +96,7 @@ interface FunctionExpression : LambdaArgument {
 
 interface CallableReferenceArgument : CallArgument {
     override val isSpread: Boolean
-        get() = false // todo error on call -- function type is not subtype of Array<out ...>
+        get() = false
 
     // Foo::bar lhsType = Foo. For a::bar where a is expression, this type is null
     val lhsType: UnwrappedType?
