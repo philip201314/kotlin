@@ -17,10 +17,15 @@
 package org.jetbrains.kotlin.resolve.calls
 
 import com.google.common.reflect.TypeResolver
+import org.jetbrains.kotlin.config.LanguageFeature
 import org.jetbrains.kotlin.config.LanguageFeatureSettings
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
+import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.psi.Call
+import org.jetbrains.kotlin.psi.KtProjectionKind
+import org.jetbrains.kotlin.psi.KtTypeProjection
+import org.jetbrains.kotlin.resolve.ModifierCheckerCore
 import org.jetbrains.kotlin.resolve.calls.callUtil.isSafeCall
 import org.jetbrains.kotlin.resolve.calls.context.BasicCallResolutionContext
 import org.jetbrains.kotlin.resolve.calls.model.*
@@ -29,9 +34,10 @@ import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowInfo
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValue
 import org.jetbrains.kotlin.resolve.calls.smartcasts.DataFlowValueFactory
 import org.jetbrains.kotlin.resolve.calls.tower.NewResolutionOldInference
+import org.jetbrains.kotlin.resolve.lazy.ForceResolveUtil
 import org.jetbrains.kotlin.resolve.scopes.receivers.QualifierReceiver
+import org.jetbrains.kotlin.resolve.scopes.receivers.Receiver
 import org.jetbrains.kotlin.resolve.scopes.receivers.ReceiverValue
-import org.jetbrains.kotlin.types.TypeProjection
 import org.jetbrains.kotlin.types.UnwrappedType
 import org.jetbrains.kotlin.types.checker.intersectTypes
 import org.jetbrains.kotlin.utils.addToStdlib.check
@@ -39,7 +45,8 @@ import java.util.*
 
 class NewCallResolver(
         val typeResolver: TypeResolver,
-        val languageFeatureSettings: LanguageFeatureSettings
+        val languageFeatureSettings: LanguageFeatureSettings,
+        val argumentTypeResolver: ArgumentTypeResolver
 ) {
     val useNewInference = false
     val allowStarInFunctionArguments = false
@@ -61,34 +68,53 @@ class NewCallResolver(
         return intersectTypes(types)
     }
 
-    fun toNewCall(context: BasicCallResolutionContext,
-                  oldCall: Call): NewCall {
-        val oldReceiver = oldCall.explicitReceiver
-        val isSafeCall = oldCall.isSafeCall()
+    fun toNewCall(context: BasicCallResolutionContext, oldCall: Call, name: Name): NewCall {
 
-        val explicitReceiver = when(oldReceiver) {
-            null -> null
-            is QualifierReceiver -> oldReceiver
-            is ReceiverValue -> {
-                val nativeType = oldReceiver.type.unwrap()
-                val dataFlowValue = DataFlowValueFactory.createDataFlowValue(oldReceiver, context)
-                val collectedType = context.dataFlowInfo.collectedType(dataFlowValue)
+        val explicitReceiver = resolveExplicitReceiver(context, oldCall.explicitReceiver, oldCall.isSafeCall())
+        val typeArguments = resolveTypeArguments(context, oldCall.typeArguments)
 
-                if (dataFlowValue.isStable) {
-                    ExplicitReceiver(collectedType ?: nativeType, null, isSafeCall)
+
+    }
+
+    fun resolveExplicitReceiver(context: BasicCallResolutionContext, oldReceiver: Receiver?, isSafeCall: Boolean): ReceiverCallArgument? =
+            when(oldReceiver) {
+                null -> null
+                is QualifierReceiver -> oldReceiver
+                is ReceiverValue -> {
+                    val nativeType = oldReceiver.type.unwrap()
+                    val dataFlowValue = DataFlowValueFactory.createDataFlowValue(oldReceiver, context)
+                    val collectedType = context.dataFlowInfo.collectedType(dataFlowValue)
+
+                    if (dataFlowValue.isStable) {
+                        ExplicitReceiver(collectedType ?: nativeType, null, isSafeCall)
+                    }
+                    else {
+                        ExplicitReceiver(nativeType, collectedType, isSafeCall)
+                    }
+                }
+                else -> error("Incorrect receiver: $oldReceiver")
+            }
+
+    fun resolveTypeArguments(context: BasicCallResolutionContext, typeArguments: List<KtTypeProjection>): List<TypeArgument> =
+            typeArguments.map { projection ->
+                ModifierCheckerCore.check(projection, context.trace, null, languageFeatureSettings)
+
+                if (projection.projectionKind != KtProjectionKind.NONE &&
+                    !(projection.projectionKind == KtProjectionKind.STAR &&
+                      languageFeatureSettings.supportsFeature(LanguageFeature.PlaceholderInTypeParameters))
+                ) {
+                    context.trace.report(Errors.PROJECTION_ON_NON_CLASS_TYPE_ARGUMENT.on(projection))
+                }
+                val type = argumentTypeResolver.resolveTypeRefWithDefault(projection.typeReference, context.scope, context.trace, null)
+                ForceResolveUtil.forceResolveAllContents(type)
+
+                if (type != null) {
+                    SimpleTypeArgumentImpl(type.unwrap())
                 }
                 else {
-                    ExplicitReceiver(nativeType, collectedType, isSafeCall)
+                    TypeArgumentPlaceholder
                 }
             }
-            else -> error("Incorrect receiver: $oldReceiver")
-        }
-
-    }
-
-    fun resolveTypeArguments(context: BasicCallResolutionContext, typeArguments: List<TypeProjection>) {
-
-    }
 
     class ExplicitReceiver(
             override val type: UnwrappedType,
@@ -107,4 +133,6 @@ class NewCallResolver(
             override val argumentsInParenthesis: List<CallArgument>,
             override val externalArgument: CallArgument?
     ) : NewCall
+
+    class SimpleTypeArgumentImpl(override val type: UnwrappedType): SimpleTypeArgument
 }
