@@ -206,8 +206,7 @@ class NewCandidateResolver(
                     unstableType: UnwrappedType?, expectedType: UnwrappedType, position: ArgumentPosition
             ): CallDiagnostic? {
                 if (unstableType != null) {
-                    if (csBuilder.isCompatibleSubtypeConstraint(unstableType, expectedType)) {
-                        csBuilder.addSubtypeConstraint(unstableType, expectedType, position)
+                    if (csBuilder.addIfIsCompatibleSubtypeConstraint(unstableType, expectedType, position)) {
                         return UnstableSmartCast(expressionArgument, unstableType)
                     }
                 }
@@ -217,16 +216,14 @@ class NewCandidateResolver(
             val expectedNullableType = expectedType.makeNullableAsSpecified(true)
             val position = ArgumentPosition(expressionArgument)
             if (expressionArgument.isSafeCall) {
-                if (!csBuilder.isCompatibleSubtypeConstraint(expressionArgument.type, expectedNullableType)) {
+                if (!csBuilder.addIfIsCompatibleSubtypeConstraint(expressionArgument.type, expectedNullableType, position)) {
                     unstableSmartCast(expressionArgument.unstableType, expectedNullableType, position)?.let { return it }
                 }
-                csBuilder.addSubtypeConstraint(expressionArgument.type, expectedNullableType, position)
                 return null
             }
 
-            if (!csBuilder.isCompatibleSubtypeConstraint(expressionArgument.type, expectedType)) {
-                if (csBuilder.isCompatibleSubtypeConstraint(expressionArgument.type, expectedNullableType)) {
-                    csBuilder.addSubtypeConstraint(expressionArgument.type, expectedNullableType, position)
+            if (!csBuilder.addIfIsCompatibleSubtypeConstraint(expressionArgument.type, expectedType, position)) {
+                if (csBuilder.addIfIsCompatibleSubtypeConstraint(expressionArgument.type, expectedNullableType, position)) {
                     return UnsafeCallError(expressionArgument)
                 }
                 else {
@@ -234,7 +231,6 @@ class NewCandidateResolver(
                 }
             }
 
-            csBuilder.addSubtypeConstraint(expressionArgument.type, expectedType, position)
             return null
         }
 
@@ -253,14 +249,12 @@ class NewCandidateResolver(
                 return null
             }
 
-            if (!csBuilder.isCompatibleSubtypeConstraint(resolvedCall.currentReturnType, expectedType) &&
-                csBuilder.isCompatibleSubtypeConstraint(resolvedCall.currentReturnType, expectedNullableType)
+            if (!csBuilder.addIfIsCompatibleSubtypeConstraint(resolvedCall.currentReturnType, expectedType, position) &&
+                csBuilder.addIfIsCompatibleSubtypeConstraint(resolvedCall.currentReturnType, expectedNullableType, position)
             ) {
-                csBuilder.addSubtypeConstraint(resolvedCall.currentReturnType, expectedNullableType, position)
                 return UnsafeCallError(subCall)
             }
 
-            csBuilder.addSubtypeConstraint(resolvedCall.currentReturnType, expectedType, position)
             return null
         }
     }

@@ -77,7 +77,7 @@ interface ConstraintSystemBuilder {
 
     fun addSubsystem(otherSystem: NewConstraintSystem)
 
-    fun isCompatibleSubtypeConstraint(lowerType: UnwrappedType, upperType: UnwrappedType): Boolean
+    fun addIfIsCompatibleSubtypeConstraint(lowerType: UnwrappedType, upperType: UnwrappedType, position: Position): Boolean
 
     /**
      * This function remove variables for which we know exact type.

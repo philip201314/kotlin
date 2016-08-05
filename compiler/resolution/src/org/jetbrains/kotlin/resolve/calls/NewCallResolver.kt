@@ -54,11 +54,6 @@ class NewCallResolver(
         TODO()
     }
 
-    // this receiver will be used as ExplicitReceiver for TowerResolver. Also similar receiver will be used for variable as function call.
-    private class ExplicitReceiverWrapper(private val type: KotlinType): ReceiverValue {
-        override fun getType() = type
-    }
-
 
 
 
