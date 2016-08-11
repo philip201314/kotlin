@@ -384,7 +384,7 @@ object NullabilityChecker {
 /**
  * ClassType means that type constructor for this type is type for real class or interface
  */
-private val SimpleType.isClassType: Boolean get() = constructor.declarationDescriptor is ClassDescriptor
+val SimpleType.isClassType: Boolean get() = constructor.declarationDescriptor is ClassDescriptor
 
 /**
  * SingleClassifierType is one of the following types:
@@ -394,10 +394,10 @@ private val SimpleType.isClassType: Boolean get() = constructor.declarationDescr
  *
  * Such types can contains error types in our arguments, but type constructor isn't errorTypeConstructor
  */
-private val SimpleType.isSingleClassifierType: Boolean
+val SimpleType.isSingleClassifierType: Boolean
     get() = !isError &&
             constructor.declarationDescriptor !is TypeAliasDescriptor &&
             (constructor.declarationDescriptor != null || this is CapturedType || this is NewCapturedType)
 
-private val SimpleType.isIntersectionType: Boolean
+val SimpleType.isIntersectionType: Boolean
     get() = constructor is IntersectionTypeConstructor
