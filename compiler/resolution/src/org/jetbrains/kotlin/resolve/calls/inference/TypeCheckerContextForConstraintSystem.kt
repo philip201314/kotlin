@@ -25,6 +25,7 @@ abstract class TypeCheckerContextForConstraintSystem : TypeCheckerContext(errorT
 
     abstract fun isMyTypeVariable(type: SimpleType): Boolean
 
+    // super and sub type isSingleClassifierType
     abstract fun addUpperConstraint(typeVariable: SimpleType, superType: UnwrappedType)
     abstract fun addLowerConstraint(typeVariable: SimpleType, subType: UnwrappedType)
 

@@ -18,12 +18,13 @@ package org.jetbrains.kotlin.resolve.calls.inference
 
 import org.jetbrains.kotlin.types.FlexibleType
 import org.jetbrains.kotlin.types.SimpleType
+import org.jetbrains.kotlin.types.TypeConstructor
 import org.jetbrains.kotlin.types.UnwrappedType
 import java.util.*
 
 enum class ConstraintKind {
-    SUBTYPE,
-    SUPERTYPE,
+    LOWER,
+    UPPER,
     EQUALITY
 }
 
@@ -38,7 +39,7 @@ class IncorporationPosition(val from: Position) : Position
 
 class Constraint(
         val kind: ConstraintKind,
-        val type: UnwrappedType, // may be SimpleType?
+        val type: UnwrappedType, // flexible types here is allowed
         val position: Position
 ) {
 
@@ -61,7 +62,7 @@ class InitialConstraint(
 private const val ALLOWED_DEPTH_DELTA_FOR_INCORPORATION = 3
 
 class ConstraintStorage {
-    val typeVariables: MutableMap<TypeVariable, VariableWithConstrains> = HashMap()
+    val typeVariables: MutableMap<TypeConstructor, VariableWithConstrains> = HashMap()
     val initialConstraints: MutableList<InitialConstraint> = ArrayList()
     var allowedTypeDepth: Int = 1 + ALLOWED_DEPTH_DELTA_FOR_INCORPORATION
 
@@ -70,15 +71,15 @@ class ConstraintStorage {
     }
 
     fun registerVariable(variable: TypeVariable) {
-        assert(!typeVariables.contains(variable)) {
+        assert(!typeVariables.contains(variable.freshTypeConstructor)) {
             "Already registered: $variable"
         }
 
-        typeVariables[variable] = VariableWithConstrains(variable, typeVariables.size)
+        typeVariables[variable.freshTypeConstructor] = VariableWithConstrains(variable, typeVariables.size)
     }
 
     fun addSubtypeConstraint(lowerType: UnwrappedType, upperType: UnwrappedType, position: Position) {
-        initialConstraints.add(InitialConstraint(lowerType, upperType, ConstraintKind.SUBTYPE, position))
+        initialConstraints.add(InitialConstraint(lowerType, upperType, ConstraintKind.LOWER, position))
         updateAllowedTypeDepth(lowerType)
         updateAllowedTypeDepth(upperType)
 
