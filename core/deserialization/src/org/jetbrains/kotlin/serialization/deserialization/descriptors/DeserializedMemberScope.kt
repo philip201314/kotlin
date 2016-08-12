@@ -27,6 +27,7 @@ import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.resolve.scopes.MemberScopeImpl
 import org.jetbrains.kotlin.serialization.ProtoBuf
 import org.jetbrains.kotlin.serialization.deserialization.DeserializationContext
+import org.jetbrains.kotlin.storage.getValue
 import org.jetbrains.kotlin.utils.Printer
 import org.jetbrains.kotlin.utils.toReadOnlyList
 import java.util.*
@@ -38,19 +39,19 @@ abstract class DeserializedMemberScope protected constructor(
         typeAliasList: Collection<ProtoBuf.TypeAlias>
 ) : MemberScopeImpl() {
 
-    private val functionProtos =
+    protected val functionProtos by
             c.storageManager.createLazyValue {
                 functionList.groupByName { it.name }
             }
-    private val propertyProtos =
+    protected val propertyProtos by
             c.storageManager.createLazyValue {
                 propertyList.groupByName { it.name }
             }
-    private val typeAliasProtos =
+    private val typeAliasProtos by
             c.storageManager.createLazyValue {
                 typeAliasList.groupByName { it.name }
             }
-    protected val typeAliasNames =
+    protected val typeAliasNames by
             c.storageManager.createLazyValue {
                 typeAliasList.map { c.nameResolver.getName(it.name) }
             }
@@ -67,7 +68,7 @@ abstract class DeserializedMemberScope protected constructor(
     ) = groupBy { c.nameResolver.getName(getNameIndex(it)) }
 
     private fun computeFunctions(name: Name): Collection<SimpleFunctionDescriptor> {
-        val protos = functionProtos()[name] ?: emptyList()
+        val protos = functionProtos[name] ?: emptyList()
 
         val descriptors = protos.mapTo(linkedSetOf()) {
             c.memberDeserializer.loadFunction(it)
@@ -83,7 +84,7 @@ abstract class DeserializedMemberScope protected constructor(
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<SimpleFunctionDescriptor> = functions(name)
 
     private fun computeProperties(name: Name): Collection<PropertyDescriptor> {
-        val protos = propertyProtos()[name] ?: return emptyList()
+        val protos = propertyProtos[name] ?: return emptyList()
 
         val descriptors = protos.mapTo(linkedSetOf()) {
             c.memberDeserializer.loadProperty(it)
@@ -97,7 +98,7 @@ abstract class DeserializedMemberScope protected constructor(
     }
 
     private fun computeTypeAliases(name: Name): Collection<TypeAliasDescriptor> {
-        val protos = typeAliasProtos()[name].orEmpty()
+        val protos = typeAliasProtos[name].orEmpty()
         val descriptors = protos.mapTo(linkedSetOf()) {
             c.memberDeserializer.loadTypeAlias(it)
         }
@@ -145,12 +146,12 @@ abstract class DeserializedMemberScope protected constructor(
             location: LookupLocation
     ) {
         if (kindFilter.acceptsKinds(DescriptorKindFilter.VARIABLES_MASK)) {
-            val names = propertyProtos().keys.filter { nameFilter(it) }
+            val names = propertyProtos.keys.filter { nameFilter(it) }
             result.addAll(names.flatMap { getContributedVariables(it, location) })
         }
 
         if (kindFilter.acceptsKinds(DescriptorKindFilter.FUNCTIONS_MASK)) {
-            val names = functionProtos().keys.filter { nameFilter(it) }
+            val names = functionProtos.keys.filter { nameFilter(it) }
             result.addAll(names.flatMap { getContributedFunctions(it, location) })
         }
     }
