@@ -26,8 +26,8 @@ abstract class TypeCheckerContextForConstraintSystem : TypeCheckerContext(errorT
     abstract fun isMyTypeVariable(type: SimpleType): Boolean
 
     // super and sub type isSingleClassifierType
-    abstract fun addUpperConstraint(typeVariable: SimpleType, superType: UnwrappedType)
-    abstract fun addLowerConstraint(typeVariable: SimpleType, subType: UnwrappedType)
+    abstract fun addUpperConstraint(typeVariable: TypeConstructor, superType: UnwrappedType)
+    abstract fun addLowerConstraint(typeVariable: TypeConstructor, subType: UnwrappedType)
 
     override final fun addSubtypeConstraint(subType: UnwrappedType, superType: UnwrappedType): Boolean? {
         assertInputTypes(subType, superType)
@@ -56,10 +56,10 @@ abstract class TypeCheckerContextForConstraintSystem : TypeCheckerContext(errorT
         val typeVariable = typeVariable.upperIfFlexible()
 
         if (typeVariable.isMarkedNullable) {
-            addLowerConstraint(typeVariable, intersectTypes(listOf(subType, subType.builtIns.anyType)))
+            addLowerConstraint(typeVariable.constructor, intersectTypes(listOf(subType, subType.builtIns.anyType)))
         }
         else {
-            addLowerConstraint(typeVariable, subType)
+            addLowerConstraint(typeVariable.constructor, subType)
         }
 
         return true
@@ -74,7 +74,7 @@ abstract class TypeCheckerContextForConstraintSystem : TypeCheckerContext(errorT
         @Suppress("NAME_SHADOWING")
         val typeVariable = typeVariable.lowerIfFlexible()
 
-        addUpperConstraint(typeVariable, superType)
+        addUpperConstraint(typeVariable.constructor, superType)
 
         if (typeVariable.isMarkedNullable) {
             // here is important that superType is singleClassifierType
