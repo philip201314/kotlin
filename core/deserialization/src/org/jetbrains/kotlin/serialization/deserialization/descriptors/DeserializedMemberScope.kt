@@ -68,7 +68,7 @@ abstract class DeserializedMemberScope protected constructor(
     ) = groupBy { c.nameResolver.getName(getNameIndex(it)) }
 
     private fun computeFunctions(name: Name): Collection<SimpleFunctionDescriptor> {
-        val protos = functionProtos[name] ?: emptyList()
+        val protos = functionProtos[name].orEmpty()
 
         val descriptors = protos.mapTo(linkedSetOf()) {
             c.memberDeserializer.loadFunction(it)
@@ -84,7 +84,7 @@ abstract class DeserializedMemberScope protected constructor(
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<SimpleFunctionDescriptor> = functions(name)
 
     private fun computeProperties(name: Name): Collection<PropertyDescriptor> {
-        val protos = propertyProtos[name] ?: return emptyList()
+        val protos = propertyProtos[name].orEmpty()
 
         val descriptors = protos.mapTo(linkedSetOf()) {
             c.memberDeserializer.loadProperty(it)
