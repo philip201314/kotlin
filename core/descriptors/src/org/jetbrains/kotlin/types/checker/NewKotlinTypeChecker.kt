@@ -284,7 +284,7 @@ object NewKotlinTypeChecker : KotlinTypeChecker {
         }
     }
 
-    private fun effectiveVariance(declared: Variance, useSite: Variance): Variance? {
+    fun effectiveVariance(declared: Variance, useSite: Variance): Variance? {
         if (declared == Variance.INVARIANT) return useSite
         if (useSite == Variance.INVARIANT) return declared
 
