@@ -18,6 +18,7 @@ package org.jetbrains.kotlin.name;
 
 import kotlin.collections.ArraysKt;
 import kotlin.jvm.functions.Function1;
+import kotlin.text.StringsKt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -28,8 +29,14 @@ import java.util.List;
  * Like {@link FqName} but allows '<' and '>' characters in name.
  */
 public final class FqNameUnsafe {
+    private static final Name ROOT_NAME = Name.special("<root>");
 
-    public static final Name ROOT_NAME = Name.special("<root>");
+    private static final Function1<String, Name> STRING_TO_NAME = new Function1<String, Name>() {
+        @Override
+        public Name invoke(String name) {
+            return Name.guessByFirstCharacter(name);
+        }
+    };
 
     @NotNull
     private final String fqName;
@@ -147,17 +154,11 @@ public final class FqNameUnsafe {
 
     @NotNull
     public List<Name> pathSegments() {
-        return isRoot() ? Collections.<Name>emptyList() :
-               ArraysKt.map(fqName.split("\\."), new Function1<String, Name>() {
-                   @Override
-                   public Name invoke(String name) {
-                       return Name.guessByFirstCharacter(name);
-                   }
-               });
+        return isRoot() ? Collections.<Name>emptyList() : ArraysKt.map(fqName.split("\\."), STRING_TO_NAME);
     }
 
     public boolean startsWith(@NotNull Name segment) {
-        return !isRoot() && pathSegments().get(0).equals(segment);
+        return !isRoot() && StringsKt.substringBefore(fqName, '.', fqName).equals(segment.asString());
     }
 
     @NotNull
