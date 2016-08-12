@@ -16,7 +16,10 @@
 
 package org.jetbrains.kotlin.serialization.deserialization.descriptors
 
-import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
+import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.descriptors.SimpleFunctionDescriptor
+import org.jetbrains.kotlin.descriptors.TypeAliasDescriptor
 import org.jetbrains.kotlin.incremental.components.LookupLocation
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.protobuf.MessageLite
@@ -24,7 +27,6 @@ import org.jetbrains.kotlin.resolve.scopes.DescriptorKindFilter
 import org.jetbrains.kotlin.resolve.scopes.MemberScopeImpl
 import org.jetbrains.kotlin.serialization.ProtoBuf
 import org.jetbrains.kotlin.serialization.deserialization.DeserializationContext
-import org.jetbrains.kotlin.serialization.deserialization.receiverType
 import org.jetbrains.kotlin.utils.Printer
 import org.jetbrains.kotlin.utils.toReadOnlyList
 import java.util.*
@@ -36,19 +38,17 @@ abstract class DeserializedMemberScope protected constructor(
         typeAliasList: Collection<ProtoBuf.TypeAlias>
 ) : MemberScopeImpl() {
 
-    private data class ProtoKey(val name: Name, val isExtension: Boolean)
-
     private val functionProtos =
             c.storageManager.createLazyValue {
-                groupByKey(functionList, { it.name }) { it.receiverType(c.typeTable) != null }
+                functionList.groupByName { it.name }
             }
     private val propertyProtos =
             c.storageManager.createLazyValue {
-                groupByKey(propertyList, { it.name }) { it.receiverType(c.typeTable) != null }
+                propertyList.groupByName { it.name }
             }
     private val typeAliasProtos =
             c.storageManager.createLazyValue {
-                typeAliasList.groupBy { c.nameResolver.getName(it.name) }
+                typeAliasList.groupByName { it.name }
             }
     protected val typeAliasNames =
             c.storageManager.createLazyValue {
@@ -62,20 +62,12 @@ abstract class DeserializedMemberScope protected constructor(
     private val typeAliases =
             c.storageManager.createMemoizedFunction<Name, Collection<TypeAliasDescriptor>> { computeTypeAliases(it) }
 
-    private fun <M : MessageLite> groupByKey(
-            protos: Collection<M>, getNameIndex: (M) -> Int, isExtension: (M) -> Boolean
-    ): Map<ProtoKey, List<M>> {
-        val map = LinkedHashMap<ProtoKey, MutableList<M>>()
-        for (proto in protos) {
-            val key = ProtoKey(c.nameResolver.getName(getNameIndex(proto)), isExtension(proto))
-            map.getOrPut(key) { ArrayList(1) }.add(proto)
-        }
-        return map
-    }
+    private inline fun <M : MessageLite> Collection<M>.groupByName(
+            getNameIndex: (M) -> Int
+    ) = groupBy { c.nameResolver.getName(getNameIndex(it)) }
 
     private fun computeFunctions(name: Name): Collection<SimpleFunctionDescriptor> {
-        val protos = functionProtos()[ProtoKey(name, isExtension = false)].orEmpty() +
-                     functionProtos()[ProtoKey(name, isExtension = true)].orEmpty()
+        val protos = functionProtos()[name] ?: emptyList()
 
         val descriptors = protos.mapTo(linkedSetOf()) {
             c.memberDeserializer.loadFunction(it)
@@ -91,8 +83,7 @@ abstract class DeserializedMemberScope protected constructor(
     override fun getContributedFunctions(name: Name, location: LookupLocation): Collection<SimpleFunctionDescriptor> = functions(name)
 
     private fun computeProperties(name: Name): Collection<PropertyDescriptor> {
-        val protos = propertyProtos()[ProtoKey(name, isExtension = false)].orEmpty() +
-                     propertyProtos()[ProtoKey(name, isExtension = true)].orEmpty()
+        val protos = propertyProtos()[name] ?: return emptyList()
 
         val descriptors = protos.mapTo(linkedSetOf()) {
             c.memberDeserializer.loadProperty(it)
@@ -154,25 +145,13 @@ abstract class DeserializedMemberScope protected constructor(
             location: LookupLocation
     ) {
         if (kindFilter.acceptsKinds(DescriptorKindFilter.VARIABLES_MASK)) {
-            val keys = propertyProtos().keys.filter { nameFilter(it.name) }
-            addMembers(result, keys) { getContributedVariables(it, location) }
+            val names = propertyProtos().keys.filter { nameFilter(it) }
+            result.addAll(names.flatMap { getContributedVariables(it, location) })
         }
 
         if (kindFilter.acceptsKinds(DescriptorKindFilter.FUNCTIONS_MASK)) {
-            val keys = functionProtos().keys.filter { nameFilter(it.name) }
-            addMembers(result, keys) { getContributedFunctions(it, location) }
-        }
-    }
-
-    private fun addMembers(
-            result: MutableCollection<DeclarationDescriptor>,
-            keys: Collection<ProtoKey>,
-            getMembers: (Name) -> Collection<CallableDescriptor>
-    ) {
-        listOf(false, true).forEach { isExtension ->
-            keys.filter { it.isExtension == isExtension }
-                    .flatMap { getMembers(it.name) }
-                    .filterTo(result) { (it.extensionReceiverParameter != null) == isExtension }
+            val names = functionProtos().keys.filter { nameFilter(it) }
+            result.addAll(names.flatMap { getContributedFunctions(it, location) })
         }
     }
 
