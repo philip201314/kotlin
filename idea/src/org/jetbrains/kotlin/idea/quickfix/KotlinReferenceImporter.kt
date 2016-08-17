@@ -87,7 +87,7 @@ class KotlinReferenceImporter : ReferenceImporter {
             val bindingContext = analyze(BodyResolveMode.PARTIAL)
             if (mainReference.resolveToDescriptors(bindingContext).isNotEmpty()) return false
 
-            var suggestions = AutoImportFix(this).computeSuggestions()
+            var suggestions = ImportFix(this).computeSuggestions()
 
             if (suggestions.distinctBy { it.importableFqName!! }.size != 1) return false
 
