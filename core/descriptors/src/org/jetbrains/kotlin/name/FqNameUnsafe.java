@@ -18,18 +18,19 @@ package org.jetbrains.kotlin.name;
 
 import kotlin.collections.ArraysKt;
 import kotlin.jvm.functions.Function1;
-import kotlin.text.StringsKt;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Like {@link FqName} but allows '<' and '>' characters in name.
  */
 public final class FqNameUnsafe {
     private static final Name ROOT_NAME = Name.special("<root>");
+    private static final Pattern SPLIT_BY_DOTS = Pattern.compile("\\.");
 
     private static final Function1<String, Name> STRING_TO_NAME = new Function1<String, Name>() {
         @Override
@@ -154,11 +155,12 @@ public final class FqNameUnsafe {
 
     @NotNull
     public List<Name> pathSegments() {
-        return isRoot() ? Collections.<Name>emptyList() : ArraysKt.map(fqName.split("\\."), STRING_TO_NAME);
+        return isRoot() ? Collections.<Name>emptyList() : ArraysKt.map(SPLIT_BY_DOTS.split(fqName), STRING_TO_NAME);
     }
 
     public boolean startsWith(@NotNull Name segment) {
-        return !isRoot() && StringsKt.substringBefore(fqName, '.', fqName).equals(segment.asString());
+        int firstDot = fqName.indexOf('.');
+        return !isRoot() && fqName.regionMatches(0, segment.asString(), 0, firstDot == -1 ? fqName.length() : firstDot);
     }
 
     @NotNull
