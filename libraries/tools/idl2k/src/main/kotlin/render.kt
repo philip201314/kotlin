@@ -217,7 +217,9 @@ fun betterFunction(f1: GenerateFunction, f2: GenerateFunction): GenerateFunction
         f1.copy(
                 arguments = f1.arguments
                         .zip(f2.arguments)
-                        .map { it.first.copy(type = it.map { it.type }.betterType(), name = it.map { it.name }.betterName()) }
+                        .map { it.first.copy(type = it.map { it.type }.betterType(), name = it.map { it.name }.betterName()) },
+                nativeGetterOrSetter = listOf(f1.nativeGetterOrSetter, f2.nativeGetterOrSetter)
+                        .firstOrNull { it != NativeGetterOrSetter.NONE } ?: NativeGetterOrSetter.NONE
         )
 
 private fun <F, T> Pair<F, F>.map(block: (F) -> T) = block(first) to block(second)

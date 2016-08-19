@@ -595,8 +595,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Byte = noImpl
-    fun set(index: Int, value: Byte): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Byte = noImpl
+    operator @nativeSetter fun set(index: Int, value: Byte): Unit = noImpl
     fun set(array: Int8Array, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Byte>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Int8Array = noImpl
@@ -619,8 +619,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Byte = noImpl
-    fun set(index: Int, value: Byte): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Byte = noImpl
+    operator @nativeSetter fun set(index: Int, value: Byte): Unit = noImpl
     fun set(array: Uint8Array, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Byte>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Uint8Array = noImpl
@@ -643,8 +643,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Byte = noImpl
-    fun set(index: Int, value: Byte): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Byte = noImpl
+    operator @nativeSetter fun set(index: Int, value: Byte): Unit = noImpl
     fun set(array: Uint8ClampedArray, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Byte>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Uint8ClampedArray = noImpl
@@ -667,8 +667,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Short = noImpl
-    fun set(index: Int, value: Short): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Short = noImpl
+    operator @nativeSetter fun set(index: Int, value: Short): Unit = noImpl
     fun set(array: Int16Array, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Short>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Int16Array = noImpl
@@ -691,8 +691,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Short = noImpl
-    fun set(index: Int, value: Short): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Short = noImpl
+    operator @nativeSetter fun set(index: Int, value: Short): Unit = noImpl
     fun set(array: Uint16Array, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Short>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Uint16Array = noImpl
@@ -715,8 +715,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Int = noImpl
-    fun set(index: Int, value: Int): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Int = noImpl
+    operator @nativeSetter fun set(index: Int, value: Int): Unit = noImpl
     fun set(array: Int32Array, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Int>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Int32Array = noImpl
@@ -739,8 +739,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Int = noImpl
-    fun set(index: Int, value: Int): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Int = noImpl
+    operator @nativeSetter fun set(index: Int, value: Int): Unit = noImpl
     fun set(array: Uint32Array, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Int>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Uint32Array = noImpl
@@ -763,8 +763,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Float = noImpl
-    fun set(index: Int, value: Float): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Float = noImpl
+    operator @nativeSetter fun set(index: Int, value: Float): Unit = noImpl
     fun set(array: Float32Array, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Float>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Float32Array = noImpl
@@ -787,8 +787,8 @@ public inline fun WebGLContextEventInit(statusMessage: String, bubbles: Boolean 
         get() = noImpl
     open val byteLength: Int
         get() = noImpl
-    fun get(index: Int): Double = noImpl
-    fun set(index: Int, value: Double): Unit = noImpl
+    operator @nativeGetter fun get(index: Int): Double = noImpl
+    operator @nativeSetter fun set(index: Int, value: Double): Unit = noImpl
     fun set(array: Float64Array, offset: Int = noImpl): Unit = noImpl
     fun set(array: Array<Double>, offset: Int = noImpl): Unit = noImpl
     fun subarray(start: Int, end: Int): Float64Array = noImpl
