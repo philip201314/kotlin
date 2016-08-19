@@ -20,6 +20,9 @@ package kotlin.collections
 public fun <reified T> Collection<T>.toTypedArray(): Array<T> = noImpl
 
 
+@library("copyToArrayImpl")
+internal fun copyToArrayImpl(collection: Collection<*>): Array<Any?> = noImpl
+
 /**
  * Returns an immutable list containing only the specified object [element].
  */

@@ -34,26 +34,8 @@ public inline fun <T> Comparator(crossinline comparison: (T, T) -> Int): Compara
 @library
 public interface RandomAccess
 
-@library
-public abstract class AbstractCollection<E>() : MutableCollection<E> {
-    override fun isEmpty(): Boolean = noImpl
-    override fun contains(o: E): Boolean = noImpl
-    override fun iterator(): MutableIterator<E> = noImpl
-
-    override fun add(e: E): Boolean = noImpl
-    override fun remove(o: E): Boolean = noImpl
-
-    override fun addAll(c: Collection<E>): Boolean = noImpl
-    override fun containsAll(c: Collection<E>): Boolean = noImpl
-    override fun removeAll(c: Collection<E>): Boolean = noImpl
-    override fun retainAll(c: Collection<E>): Boolean = noImpl
-
-    override fun clear(): Unit = noImpl
-    abstract override val size: Int
-
-    override fun hashCode(): Int = noImpl
-    override fun equals(other: Any?): Boolean = noImpl
-}
+// in lack of type aliases
+public abstract class AbstractCollection<E> : kotlin.collections.AbstractCollection<E>()
 
 @library
 public abstract class AbstractList<E>() : AbstractCollection<E>(), MutableList<E> {
@@ -69,6 +51,8 @@ public abstract class AbstractList<E>() : AbstractCollection<E>(), MutableList<E
     override fun indexOf(o: E): Int = noImpl
     override fun lastIndexOf(o: E): Int = noImpl
 
+    override fun iterator(): MutableIterator<E> = noImpl
+
     override fun listIterator(): MutableListIterator<E> = noImpl
     override fun listIterator(index: Int): MutableListIterator<E> = noImpl
 
@@ -79,6 +63,7 @@ public abstract class AbstractList<E>() : AbstractCollection<E>(), MutableList<E
     override fun equals(other: Any?): Boolean = noImpl
 
     override fun toString(): String = noImpl
+    override fun hashCode(): Int = noImpl
 }
 
 @library
@@ -91,7 +76,11 @@ public open class ArrayList<E>(capacity: Int = 0) : AbstractList<E>(), RandomAcc
 public open class HashSet<E>(
         initialCapacity: Int = DEFAULT_INITIAL_CAPACITY, loadFactor: Float = DEFAULT_LOAD_FACTOR
 ) : AbstractCollection<E>(), MutableSet<E> {
+    override fun iterator(): MutableIterator<E> = noImpl
     override val size: Int get() = noImpl
+    override fun equals(other: Any?): Boolean = noImpl
+
+    override fun hashCode(): Int = noImpl
 }
 
 @library

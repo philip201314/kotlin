@@ -543,6 +543,20 @@
                 result = (31*result + Kotlin.hashCode(obj)) | 0;
             }
             return result;
+        },
+        equals_za3rmp$: function (o) {
+            if (this.size !== o.size) return false;
+
+            var iterator1 = this.iterator();
+            var iterator2 = o.iterator();
+            var i = this.size;
+            while (i-- > 0) {
+                if (!Kotlin.equals(iterator1.next(), iterator2.next())) {
+                    return false;
+                }
+            }
+
+            return true;
         }
     });
 
@@ -1136,9 +1150,13 @@
         array.sort(Kotlin.primitiveCompareTo)
     };
 
+    // TODO: Find out whether is it referenced
     Kotlin.copyToArray = function (collection) {
         if (typeof collection.toArray !== "undefined") return collection.toArray();
+        return copyToArrayImpl(collection);
+    };
 
+    Kotlin.copyToArrayImpl = function (collection) {
         var array = [];
         var it = collection.iterator();
         while (it.hasNext()) {
