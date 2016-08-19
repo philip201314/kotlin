@@ -31,7 +31,12 @@ fun generateFunction(repository: Repository, function: Operation, functionName: 
         }
 
 fun generateFunctions(repository: Repository, function: Operation): List<GenerateFunction> {
-    val realFunction = if (function.name == "") null else generateFunction(repository, function, function.name, NativeGetterOrSetter.NONE)
+    val realFunction = when {
+        function.name == "" -> null
+        function.getterOrSetter() == NativeGetterOrSetter.NONE -> generateFunction(repository, function, function.name, NativeGetterOrSetter.NONE)
+        function.name == "get" || function.name == "set" -> null
+        else -> generateFunction(repository, function, function.name, NativeGetterOrSetter.NONE)
+    }
     val getterOrSetterFunction = when (function.getterOrSetter()) {
         NativeGetterOrSetter.NONE -> null
         NativeGetterOrSetter.GETTER -> generateFunction(repository, function, "get")
