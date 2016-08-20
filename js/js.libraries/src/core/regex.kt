@@ -17,7 +17,6 @@
 package kotlin.text
 
 import kotlin.text.js.*
-import java.util.ArrayList
 
 /**
  * Provides enumeration values to use to set regular expression options.
@@ -149,7 +148,7 @@ public class Regex(pattern: String, options: Set<RegexOption>) {
     public fun split(input: CharSequence, limit: Int = 0): List<String> {
         require(limit >= 0) { "Limit must be non-negative, but was $limit" }
         val matches = findAll(input).let { if (limit == 0) it else it.take(limit - 1) }
-        val result = ArrayList<String>()
+        val result = mutableListOf<String>()
         var lastStart = 0
 
         for (match in matches) {
@@ -216,7 +215,7 @@ private fun RegExp.findNext(input: String, from: Int): MatchResult? {
         override val groupValues: List<String>
             get() {
                 if (groupValues_ == null) {
-                    groupValues_ = object : java.util.AbstractList<String>() {
+                    groupValues_ = object : AbstractList<String>() {
                         override val size: Int get() = match.length
                         override fun get(index: Int): String = match[index] ?: ""
                     }

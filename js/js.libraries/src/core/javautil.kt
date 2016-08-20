@@ -31,46 +31,14 @@ public inline fun <T> Comparator(crossinline comparison: (T, T) -> Int): Compara
     override fun compare(obj1: T, obj2: T): Int = comparison(obj1, obj2)
 }
 
-@library
-public interface RandomAccess
 
 // in lack of type aliases
+/*
 public abstract class AbstractCollection<E> : kotlin.collections.AbstractCollection<E>()
+public abstract class AbstractList<E> : kotlin.collections.AbstractList<E>()
+public open class ArrayList<E>(capacity: Int = 0) : kotlin.collections.ArrayList<E>(capacity)
+*/
 
-@library
-public abstract class AbstractList<E>() : AbstractCollection<E>(), MutableList<E> {
-    abstract override fun get(index: Int): E
-    override fun set(index: Int, element: E): E = noImpl
-
-    override fun add(e: E): Boolean = noImpl
-    override fun add(index: Int, element: E): Unit = noImpl
-    override fun addAll(index: Int, c: Collection<E>): Boolean = noImpl
-
-    override fun removeAt(index: Int): E = noImpl
-
-    override fun indexOf(o: E): Int = noImpl
-    override fun lastIndexOf(o: E): Int = noImpl
-
-    override fun iterator(): MutableIterator<E> = noImpl
-
-    override fun listIterator(): MutableListIterator<E> = noImpl
-    override fun listIterator(index: Int): MutableListIterator<E> = noImpl
-
-    override fun subList(fromIndex: Int, toIndex: Int): MutableList<E> = noImpl
-
-    abstract override val size: Int
-
-    override fun equals(other: Any?): Boolean = noImpl
-
-    override fun toString(): String = noImpl
-    override fun hashCode(): Int = noImpl
-}
-
-@library
-public open class ArrayList<E>(capacity: Int = 0) : AbstractList<E>(), RandomAccess {
-    override fun get(index: Int): E = noImpl
-    override val size: Int get() = noImpl
-}
 
 @library
 public open class HashSet<E>(

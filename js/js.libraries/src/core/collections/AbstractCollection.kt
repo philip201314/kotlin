@@ -17,8 +17,7 @@
 package kotlin.collections
 
 
-public abstract class AbstractCollection<E>() : MutableCollection<E> {
-
+public abstract class AbstractCollection<E> protected constructor() : MutableCollection<E> {
 
     abstract override val size: Int
     abstract override fun iterator(): MutableIterator<E>
@@ -74,25 +73,9 @@ public abstract class AbstractCollection<E>() : MutableCollection<E> {
     override fun toString(): String = joinToString(", ", "[", "]") {
         if (it === this) "(this Collection)" else it.toString()
     }
-//        val iterator = iterator()
-//        if (!iterator.hasNext())
-//            return "[]"
-//
-//        val sb = StringBuilder()
-//        sb.append('[')
-//        while (true) {
-//            val e = iterator.next()
-//            sb.append(if (e === this) "(this Collection)" else e)
-//            if (!iterator.hasNext())
-//                return sb.append(']').toString()
-//            sb.append(", ")
-//        }
-//    }
 
     protected open fun toArray(): Array<Any?> = copyToArrayImpl(this)
 
     open fun toJSON(): Any = this.toArray()
 }
 
-
-private abstract class TestCollection<T>() : AbstractCollection<T>() {}
