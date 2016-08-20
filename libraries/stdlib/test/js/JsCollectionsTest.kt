@@ -60,6 +60,23 @@ class JsCollectionsTest {
         snapshotDoesNotCreateView(arrayOf<Any>("first", "last"), { arrayListOf(*it) })
     }
 
+    @test fun listEqualsOperatesOnAny() {
+        assertFalse(listOf(1, 2, 3).equals(object {}))
+    }
+
+    @test fun arrayListValidatesIndexRange() {
+        val list = mutableListOf(1)
+        for (index in listOf(-1, 3)) {
+            assertFailsWith<IndexOutOfBoundsException> { list.add(index, 2) }
+            assertFailsWith<IndexOutOfBoundsException> { list.addAll(index, listOf(3, 0)) }
+            assertFailsWith<IndexOutOfBoundsException> { list.removeAt(index) }
+            assertFailsWith<IndexOutOfBoundsException> { list[index] }
+            assertFailsWith<IndexOutOfBoundsException> { list.listIterator(index) }
+            assertFailsWith<IndexOutOfBoundsException> { list.subList(index, index + 2) }
+        }
+        assertEquals(listOf(1), list)
+    }
+
 
     private fun <T> snapshotDoesNotCreateView(array: Array<T>, snapshot: (Array<T>) -> List<T>) {
         val first = array.first()
