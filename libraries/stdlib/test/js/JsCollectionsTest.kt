@@ -77,6 +77,11 @@ class JsCollectionsTest {
         assertEquals(listOf(1), list)
     }
 
+    @test fun mutableIteratorRemove() {
+        val a = mutableListOf(1, 2, 3)
+        val it = a.iterator()
+        assertFailsWith<IllegalStateException> { it.remove() }
+    }
 
     private fun <T> snapshotDoesNotCreateView(array: Array<T>, snapshot: (Array<T>) -> List<T>) {
         val first = array.first()
